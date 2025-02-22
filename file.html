@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Risk Model Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .upload-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #666;
+        }
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background-color: #f0f9f0;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #fileInfo {
+            margin-top: 20px;
+            color: #666;
+        }
+        .preview-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            display: none;
+        }
+        .preview-table th, .preview-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .preview-table th {
+            background-color: #f2f2f2;
+        }
+        h1{
+            text-align: center;
+            margin-bottom: 100px;
+        }
+        .logo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 100px;
+            height: auto;
+        }
+        .logo2 {
+            position: absolute;
+            top: 20px;
+            right: 150px;
+            width: 100px;
+            height: auto;
+        }
+        
+    </style>
+</head>
+<body>
+    <img src="image.png" alt="Logo" class="logo">
+    <img src="image2.jpg" alt="Logo" class="logo2">
+    <h1>Insurance Risk Model Interface</h1>
+    <div class="upload-container">
+        <h2>Upload CSV File</h2>
+        <div class="upload-area" id="dropZone">
+            <p>Drag and drop your CSV file here or click to select</p>
+            <input type="file" id="fileInput" accept=".csv" style="display: none">
+        </div>
+        <div id="fileInfo"></div>
+        <button id="processBtn" class="btn" disabled>Process Data</button>
+        
+        <table id="previewTable" class="preview-table">
+            <thead>
+                <tr id="headerRow"></tr>
+            </thead>
+            <tbody id="dataRows"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const processBtn = document.getElementById('processBtn');
+        const previewTable = document.getElementById('previewTable');
+        const headerRow = document.getElementById('headerRow');
+        const dataRows = document.getElementById('dataRows');
+
+        // Handle file selection via click
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Handle drag and drop events
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            const file = files[0];
+            if (file && file.type === 'text/csv') {
+                fileInfo.textContent = `Selected file: ${file.name}`;
+                processBtn.disabled = false;
+                previewCSV(file);
+            } else {
+                fileInfo.textContent = 'Please select a valid CSV file.';
+                processBtn.disabled = true;
+                previewTable.style.display = 'none';
+            }
+        }
+
+        function previewCSV(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split('\n');
+        
+        // Display headers
+        const headers = lines[0].split(',');
+        headerRow.innerHTML = headers.map(header => 
+            `<th>${header.trim()}</th>`
+        ).join('');
+
+        // Display all rows of data (remove .slice(1, 6))
+        const previewData = lines.slice(1); // This will include all rows after the header
+        dataRows.innerHTML = previewData.map(line => 
+            `<tr>${line.split(',').map(cell => 
+                `<td>${cell.trim()}</td>`
+            ).join('')}</tr>`
+        ).join('');
+
+        previewTable.style.display = 'table';
+    };
+    reader.readAsText(file);
+}
+
+        processBtn.addEventListener('click', () => {
+            // Here you would typically send the file to your server
+            // For now, we'll just show an alert
+            alert('File processing would start here. You would typically send this to your server where your Python model is running.');
+            
+            // Example of how to send to server:
+            /*
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            
+            fetch('/process-csv', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response from your model
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+            */
+        });
+    </script>
+</body>
+</html>
